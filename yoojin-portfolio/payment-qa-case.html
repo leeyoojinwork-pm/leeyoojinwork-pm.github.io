@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가상계좌 입금 반영 오류 8일 QA | 이유진 PM</title>
+<meta name="description" content="가상계좌 계좌 발급 이후 입금 상태가 회원권과 QR 혜택에 반영되지 않은 문제를 7단계 QA로 좁히고 수정 후 재검증한 8일 기록입니다.">
+<meta property="og:title" content="가상계좌 입금 반영 오류 8일 QA | 이유진 PM">
+<meta property="og:description" content="계좌 발급 성공에서 끝내지 않고, 입금완료부터 회원 상태와 QR 활성화까지 검증한 결제 QA 사례입니다.">
+<meta property="og:image" content="https://leeyoojinwork-pm.github.io/yoojin-portfolio/img/yoojin-profile.jpeg">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://leeyoojinwork-pm.github.io/yoojin-portfolio/payment-qa-case.html">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  --ink: #0F172A;
+  --body: #334155;
+  --muted: #64748B;
+  --line: #D8E1ED;
+  --soft: #F1F5F9;
+  --paper: #FAFBFD;
+  --white: #FFFFFF;
+  --accent: #2563EB;
+  --accent-soft: #DBEAFE;
+  --navy: #0D1B4C;
+  --danger: #C93A2D;
+  --danger-soft: #FFF0ED;
+  --success: #175CD3;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  letter-spacing: -0.02em;
+}
+h1, h2, h3 { word-break: keep-all; overflow-wrap: break-word; }
+a { color: inherit; }
+.shell { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(250,251,253,0.92);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+}
+.topbar-inner {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.brand {
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 900;
+}
+.brand span { color: var(--accent); margin-left: 6px; font-size: 12px; font-weight: 800; }
+.back-link {
+  text-decoration: none;
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+.back-link:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+
+.hero { padding: 78px 0 72px; }
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
+  align-items: center;
+  gap: 64px;
+}
+.eyebrow {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  margin-bottom: 18px;
+}
+.hero h1 {
+  max-width: 720px;
+  font-size: clamp(42px, 5.5vw, 68px);
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+  font-weight: 950;
+}
+.hero-copy {
+  margin-top: 24px;
+  max-width: 620px;
+  color: var(--body);
+  font-size: 17px;
+  line-height: 1.72;
+  font-weight: 650;
+}
+.hero-meta {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.hero-meta div { background: var(--white); padding: 16px 18px; }
+.hero-meta strong { display: block; color: var(--accent); font-size: 11px; margin-bottom: 6px; }
+.hero-meta span { display: block; color: var(--body); font-size: 13px; line-height: 1.5; font-weight: 700; }
+
+.hero-visual {
+  background: var(--navy);
+  color: var(--white);
+  min-height: 440px;
+  padding: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(13,27,76,0.16);
+}
+.hero-visual h2 { font-size: 19px; line-height: 1.45; }
+.signal-flow { display: grid; gap: 12px; margin: 30px 0; }
+.signal-row { display: grid; grid-template-columns: 106px 24px 1fr; align-items: center; gap: 8px; }
+.signal-key { color: #AFC7FF; font-size: 12px; font-weight: 850; }
+.signal-arrow { color: #7EA4FF; text-align: center; font-weight: 950; }
+.signal-value {
+  padding: 13px 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.signal-row.fail .signal-arrow, .signal-row.fail .signal-value { color: #FFB4A8; border-color: rgba(255,180,168,0.34); }
+.hero-note { color: #CFD8ED; font-size: 12px; line-height: 1.65; }
+
+.section { padding: 84px 0; border-top: 1px solid rgba(15,23,42,0.08); }
+.section-head { max-width: 760px; margin-bottom: 42px; }
+.section-head h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.2; letter-spacing: -0.045em; }
+.section-head p { margin-top: 14px; color: var(--body); font-size: 16px; line-height: 1.72; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  background: var(--line);
+  gap: 1px;
+}
+.summary-item { padding: 28px 24px; background: var(--white); min-height: 150px; }
+.summary-item strong { display: block; color: var(--accent); font-size: 42px; letter-spacing: -0.05em; margin-bottom: 12px; }
+.summary-item h3 { font-size: 15px; margin-bottom: 7px; }
+.summary-item p { color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+.role-note {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 16px;
+}
+.role-block { padding: 24px; background: var(--soft); border-left: 3px solid var(--accent); }
+.role-block.dev { border-left-color: #94A3B8; }
+.role-block strong { display: block; font-size: 14px; margin-bottom: 8px; }
+.role-block p { color: var(--body); font-size: 13px; line-height: 1.65; }
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+}
+.step {
+  position: relative;
+  min-height: 114px;
+  padding: 18px 14px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.step:nth-child(n+6) { background: var(--white); color: var(--ink); border: 2px solid var(--accent); }
+.step small { color: #AFC7FF; font-size: 10px; font-weight: 900; }
+.step:nth-child(n+6) small { color: var(--accent); }
+.step strong { font-size: 13px; line-height: 1.45; }
+.breakpoint {
+  margin-top: 18px;
+  padding: 16px 20px;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-left: 3px solid var(--danger);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.before-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.state-panel { background: var(--white); border: 1px solid var(--line); padding: 30px; }
+.state-panel h3 { font-size: 18px; margin-bottom: 24px; }
+.state-line { display: grid; grid-template-columns: 1fr 34px 1fr; gap: 8px; align-items: center; }
+.state-node {
+  padding: 18px;
+  text-align: center;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 850;
+}
+.state-node.active { color: var(--white); background: var(--navy); border-color: var(--navy); }
+.state-link { text-align: center; color: var(--muted); font-weight: 950; }
+.state-link.failed { color: var(--danger); }
+.state-caption { margin-top: 20px; color: var(--danger); font-size: 13px; line-height: 1.6; font-weight: 800; }
+
+.method-list { display: grid; gap: 10px; }
+.method {
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+.method:last-child { border-bottom: 0; }
+.method strong { font-size: 13px; }
+.method span { color: var(--body); font-size: 12px; line-height: 1.45; }
+.method em { font-style: normal; font-size: 11px; font-weight: 900; color: var(--accent); }
+.method.fail em { color: var(--danger); }
+
+.log-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.log-item {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  min-height: 132px;
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+.log-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--soft);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 950;
+}
+.log-copy { padding: 20px; }
+.log-copy strong { display: block; font-size: 14px; line-height: 1.45; margin-bottom: 8px; }
+.log-copy p { color: var(--body); font-size: 12px; line-height: 1.6; }
+.fix-callout {
+  margin-top: 24px;
+  background: var(--navy);
+  color: var(--white);
+  padding: 28px 30px;
+}
+.fix-callout strong { display: block; color: #AFC7FF; font-size: 12px; margin-bottom: 10px; }
+.fix-callout p { max-width: 940px; font-size: 17px; line-height: 1.7; font-weight: 750; }
+
+.after-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 30px;
+}
+.after-node {
+  padding: 24px 18px;
+  color: var(--white);
+  background: var(--navy);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 900;
+  border-radius: 10px;
+}
+.compare {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr 0.85fr 0.7fr;
+  border: 1px solid var(--line);
+  background: var(--line);
+  gap: 1px;
+}
+.compare div { padding: 15px 16px; background: var(--white); font-size: 12px; line-height: 1.5; }
+.compare .head { background: var(--soft); color: var(--body); font-weight: 900; }
+.compare .before { color: var(--danger); font-weight: 850; }
+.compare .after { color: var(--accent); font-weight: 850; }
+.compare .result { color: var(--accent); font-weight: 950; }
+
+.evidence {
+  padding: 30px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: 40px;
+  align-items: start;
+}
+.evidence h2 { font-size: 25px; line-height: 1.3; }
+.evidence p { color: var(--body); font-size: 13px; line-height: 1.75; }
+.evidence ul { margin-top: 14px; padding-left: 18px; color: var(--body); font-size: 12px; line-height: 1.8; }
+
+footer { padding: 34px 0 46px; color: var(--muted); font-size: 12px; }
+.footer-inner { display: flex; justify-content: space-between; gap: 24px; }
+
+@media (max-width: 900px) {
+  .hero-grid, .before-layout, .evidence { grid-template-columns: 1fr; }
+  .hero-visual { min-height: 380px; }
+  .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .role-note { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .shell { width: min(100% - 32px, 1120px); }
+  .topbar-inner { min-height: 62px; }
+  .brand span { display: none; }
+  .hero { padding: 54px 0 56px; }
+  .hero h1 { font-size: 38px; }
+  .hero-copy { font-size: 15px; }
+  .hero-meta, .summary-grid, .log-grid, .after-flow { grid-template-columns: 1fr; }
+  .hero-visual { min-height: 0; padding: 26px 22px; }
+  .signal-row { grid-template-columns: 82px 18px 1fr; }
+  .section { padding: 64px 0; }
+  .section-head { margin-bottom: 30px; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .state-line { grid-template-columns: 1fr; }
+  .state-link { transform: rotate(90deg); }
+  .method { grid-template-columns: 80px 1fr; }
+  .method em { grid-column: 2; }
+  .compare { grid-template-columns: 1.15fr 0.85fr 0.85fr; }
+  .compare .result { display: none; }
+  .evidence { gap: 18px; }
+  .footer-inner { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="shell topbar-inner">
+    <a class="brand" href="index.html">이유진 <span>Product Manager</span></a>
+    <a class="back-link" href="index.html#pm-case">포트폴리오로 돌아가기</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="shell hero-grid">
+      <div>
+        <div class="eyebrow">MEMBERSHIP PAYMENT QA CASE</div>
+        <h1>가상계좌 입금 반영 오류<br>8일 QA 리포트</h1>
+        <p class="hero-copy">계좌 발급 성공에서 끝내지 않고, 입금완료부터 회원 상태와 QR 혜택까지 같은 절차로 재검증했습니다.</p>
+        <div class="hero-meta">
+          <div><strong>PG / 환경</strong><span>이니시스 / 운영 웹 결제</span></div>
+          <div><strong>검증 범위</strong><span>가상계좌 / 카드 / 휴대폰결제</span></div>
+          <div><strong>내 역할</strong><span>제품 기획 / PG 조율 / QA 설계와 수행</span></div>
+          <div><strong>협업 구조</strong><span>연간 회원권 제안 후 팀과 공동 구현</span></div>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="수정 전 결제 상태 흐름">
+        <h2>수정 전에는 입금완료 이후<br>회원권 상태가 이어지지 않았습니다.</h2>
+        <div class="signal-flow">
+          <div class="signal-row"><span class="signal-key">이니시스</span><span class="signal-arrow">→</span><span class="signal-value">가상계좌 발급 성공</span></div>
+          <div class="signal-row"><span class="signal-key">입금</span><span class="signal-arrow">→</span><span class="signal-value">입금완료 값 수신</span></div>
+          <div class="signal-row fail"><span class="signal-key">회원 상태</span><span class="signal-arrow">×</span><span class="signal-value">납부완료 미반영</span></div>
+          <div class="signal-row fail"><span class="signal-key">QR / 혜택</span><span class="signal-arrow">×</span><span class="signal-value">비활성 상태 유지</span></div>
+        </div>
+        <p class="hero-note">공개용 페이지에는 개인정보, 주문번호, 관리자 화면을 제외하고 상태 변화와 판단 근거만 담았습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="overview">
+    <div class="shell">
+      <div class="section-head">
+        <h2>현상을 반복 설명하지 않고, 끊긴 상태를 찾았습니다</h2>
+        <p>결제수단과 상태 단계를 나눠 비교하고, 가상계좌 입금완료와 회원 납부 상태 사이의 연결 누락으로 범위를 좁혔습니다.</p>
+      </div>
+      <div class="summary-grid">
+        <article class="summary-item"><strong>8일</strong><h3>동일 양식으로 누적</h3><p>주문번호 / 단계 / 결과 / 오류 / 화면을 같은 기준으로 기록</p></article>
+        <article class="summary-item"><strong>7단계</strong><h3>결제 흐름 분리</h3><p>로그인부터 QR 혜택 활성화까지 단계별 확인</p></article>
+        <article class="summary-item"><strong>3개</strong><h3>결제수단 비교</h3><p>카드와 휴대폰은 정상, 가상계좌만 실패</p></article>
+        <article class="summary-item"><strong>1건</strong><h3>연결 누락 해결</h3><p>납부 상태 반영 로직 수정 후 전체 흐름 재검증</p></article>
+      </div>
+      <div class="role-note">
+        <div class="role-block"><strong>이유진이 맡은 일</strong><p>1년 회원권 제안, 결제 상태 정책, 이니시스 선행조건 조율, 7단계 QA 설계와 수행, 8일 기록, 수정 후 재검증</p></div>
+        <div class="role-block dev"><strong>개발자가 맡은 일</strong><p>PG 연동 코딩과 입금완료 값을 회원 납부 상태에 반영하는 로직 수정</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="procedure">
+    <div class="shell">
+      <div class="section-head">
+        <h2>결제 흐름을 7단계로 쪼개 같은 순서로 확인했습니다</h2>
+        <p>정상 결제수단과 비교해 전체 PG 장애가 아닌지 먼저 제외하고, 중단 구간을 단계 단위로 특정했습니다.</p>
+      </div>
+      <div class="steps" aria-label="7단계 결제 QA 절차">
+        <div class="step"><small>01</small><strong>로그인</strong></div>
+        <div class="step"><small>02</small><strong>회원 확인</strong></div>
+        <div class="step"><small>03</small><strong>결제 요청</strong></div>
+        <div class="step"><small>04</small><strong>PG 처리</strong></div>
+        <div class="step"><small>05</small><strong>입금완료</strong></div>
+        <div class="step"><small>06</small><strong>납부 반영</strong></div>
+        <div class="step"><small>07</small><strong>QR / 혜택</strong></div>
+      </div>
+      <div class="breakpoint">수정 전 중단 구간: 05 입금완료 → 06 회원 납부 상태 반영</div>
+    </div>
+  </section>
+
+  <section class="section" id="before">
+    <div class="shell">
+      <div class="section-head">
+        <h2>수정 전, 계좌는 발급됐지만 회원권은 활성화되지 않았습니다</h2>
+        <p>카드와 휴대폰결제는 정상 완료됐고, 가상계좌만 입금 후 회원 납부 상태와 QR 활성화로 이어지지 않았습니다.</p>
+      </div>
+      <div class="before-layout">
+        <div class="state-panel">
+          <h3>가상계좌 입금 후 상태</h3>
+          <div class="state-line">
+            <div class="state-node active">이니시스<br>입금완료</div>
+            <div class="state-link failed">×</div>
+            <div class="state-node">서비스<br>납부완료</div>
+          </div>
+          <p class="state-caption">입금완료 값과 회원 납부 상태가 연결되지 않아 회원권과 QR 혜택도 비활성 상태로 남았습니다.</p>
+        </div>
+        <div class="state-panel">
+          <h3>결제수단별 비교</h3>
+          <div class="method-list">
+            <div class="method"><strong>카드</strong><span>결제 승인 / 완료 정상 반영</span><em>정상</em></div>
+            <div class="method"><strong>가상계좌</strong><span>계좌번호 발급과 입금대기 확인</span><em>정상</em></div>
+            <div class="method fail"><strong>가상계좌</strong><span>입금완료 후 회원 상태 미반영</span><em>실패</em></div>
+            <div class="method"><strong>휴대폰</strong><span>인증 / 결제완료 정상 반영</span><em>정상</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="log">
+    <div class="shell">
+      <div class="section-head">
+        <h2>8일간 같은 양식으로 추적해 연결 누락을 특정했습니다</h2>
+        <p>원본 리포트의 시간과 주문번호는 비공개로 두고, 공개 가능한 판단과 조치 흐름만 재구성했습니다.</p>
+      </div>
+      <div class="log-grid">
+        <article class="log-item"><div class="log-day">D1</div><div class="log-copy"><strong>최초 재현 결과를 고정했습니다</strong><p>가상계좌 발급은 성공했지만 입금 후 서비스 반영이 실패하는 현상을 기록했습니다.</p></div></article>
+        <article class="log-item"><div class="log-day">D2</div><div class="log-copy"><strong>비교 가능한 리포트 양식을 만들었습니다</strong><p>주문번호, 단계, 결과, 오류, 화면, 비고를 같은 형식으로 기록했습니다.</p></div></article>
+        <article class="log-item"><div class="log-day">D3</div><div class="log-copy"><strong>전체 PG 장애가 아님을 확인했습니다</strong><p>카드와 휴대폰결제는 완료 상태가 정상 반영되는지 비교했습니다.</p></div></article>
+        <article class="log-item"><div class="log-day">D4</div><div class="log-copy"><strong>가상계좌의 중단 구간을 좁혔습니다</strong><p>가상계좌만 입금완료 이후 05에서 06단계로 이어지지 않았습니다.</p></div></article>
+        <article class="log-item"><div class="log-day">D5</div><div class="log-copy"><strong>상태 연결 누락으로 원인 범위를 확정했습니다</strong><p>입금완료 값과 회원 납부 상태가 연결되지 않은 구간을 특정했습니다.</p></div></article>
+        <article class="log-item"><div class="log-day">D6</div><div class="log-copy"><strong>재현 절차와 기대 상태를 개발자에게 전달했습니다</strong><p>입금완료가 납부완료로 반영돼야 하는 기준을 공유하고 로직 수정을 진행했습니다.</p></div></article>
+        <article class="log-item"><div class="log-day">D7</div><div class="log-copy"><strong>입금완료와 관리자 납부 상태를 재검증했습니다</strong><p>수정 후 가상계좌 입금 값이 회원 납부 상태에 반영되는지 확인했습니다.</p></div></article>
+        <article class="log-item"><div class="log-day">D8</div><div class="log-copy"><strong>회원권과 QR 혜택까지 전체 회귀 검증했습니다</strong><p>회원권 유효, QR 활성화, 제휴 혜택 사용 상태까지 같은 7단계로 확인했습니다.</p></div></article>
+      </div>
+      <div class="fix-callout">
+        <strong>실제 수정 원인 / 방식</strong>
+        <p>입금완료 값과 회원 납부 상태 사이의 연결 누락을 특정했습니다. 개발자가 입금완료를 납부완료 상태로 반영하도록 로직을 수정한 뒤 QR 활성화까지 재검증했습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="after">
+    <div class="shell">
+      <div class="section-head">
+        <h2>수정 후, 입금완료부터 QR 활성화까지 정상 반영을 확인했습니다</h2>
+        <p>오류가 사라졌다는 확인에서 끝내지 않고, 수정 전과 같은 7단계로 회원권과 혜택 상태까지 회귀 검증했습니다.</p>
+      </div>
+      <div class="after-flow" aria-label="수정 후 정상 결제 상태 흐름">
+        <div class="after-node">이니시스<br>입금완료</div>
+        <div class="after-node">서비스<br>납부완료</div>
+        <div class="after-node">회원권<br>유효</div>
+        <div class="after-node">QR / 혜택<br>활성</div>
+      </div>
+      <div class="compare" aria-label="수정 전후 검증 결과">
+        <div class="head">검증 지점</div><div class="head">수정 전</div><div class="head">수정 후</div><div class="head result">판정</div>
+        <div>가상계좌 발급</div><div>정상</div><div>정상</div><div class="result">유지</div>
+        <div>입금완료 상태 수신</div><div>정상</div><div>정상</div><div class="result">유지</div>
+        <div>회원 납부 상태 반영</div><div class="before">미반영</div><div class="after">납부완료 반영</div><div class="result">해결</div>
+        <div>회원권 / QR / 혜택 활성</div><div class="before">비활성</div><div class="after">정상 활성</div><div class="result">해결</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="evidence">
+    <div class="shell evidence">
+      <h2>공개 페이지에는 판단 구조만 남겼습니다</h2>
+      <div>
+        <p>원본 QA 리포트에는 테스트 일시, 주문번호, 오류 화면과 비고가 포함돼 있습니다. 공개 버전에서는 개인정보와 운영 계정 정보를 제외했습니다.</p>
+        <ul>
+          <li>보유 증빙: 결제 QA 시트 / 오류 리포트 / 재현 절차 / 수정 전후 결과</li>
+          <li>관리자 화면은 이니시스 사용 사실을 보조하는 자료이며, 오너십의 핵심 근거로 사용하지 않았습니다.</li>
+          <li>핵심 오너십: 상품 정의 / 결제 상태 정책 / PG 조율 / QA 기준 / 수정 후 재검증</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="shell footer-inner"><span>© 2026 이유진</span><a href="index.html">메인 포트폴리오</a></div>
+</footer>
+</body>
+</html>
