@@ -718,7 +718,6 @@ footer {
   <div class="inner">
     <div class="logo">이유진 <span>AX Educator</span></div>
     <ul>
-      <li><a href="#pm-case">PM Case</a></li>
       <li><a href="#metrics">Metrics</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#gallery">References</a></li>
@@ -808,33 +807,6 @@ footer {
         <h3>제출과 피드백으로<br>현업에 남깁니다</h3>
         <p>Padlet, Notion, GitHub 기반 제출/리뷰 구조로 수업 이후에도 재사용할 수 있는 흐름을 만듭니다.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<section id="pm-case">
-  <div class="container pm-case-wrap">
-    <div class="pm-case-copy">
-      <div class="section-label">PM Case Study</div>
-      <div class="section-title">가상계좌 입금 반영 오류를 8일 QA로 해결했습니다</div>
-      <p>계좌 발급 성공에서 끝내지 않고 결제 흐름을 7단계로 분리했습니다. 카드와 휴대폰결제는 정상인데 가상계좌만 입금 후 멈추는 것을 확인해 상태 연결 누락으로 범위를 좁혔습니다.</p>
-      <div class="pm-case-meta">
-        <div><strong>PG / 검증 범위</strong><span>이니시스 / 가상계좌 / 카드 / 휴대폰결제</span></div>
-        <div><strong>내 역할</strong><span>상품 정의 / PG 조율 / QA 설계와 수행</span></div>
-        <div><strong>수정 전</strong><span>입금완료 후 회원 납부 상태 미반영</span></div>
-        <div><strong>수정 후</strong><span>회원권 / QR / 혜택 정상 활성화</span></div>
-      </div>
-      <a class="pm-case-cta" href="payment-qa-case.html">8일 QA 기록 보기 →</a>
-    </div>
-    <div class="pm-case-visual" aria-label="가상계좌 입금 반영 오류 흐름">
-      <h3>수정 전에는 입금완료와<br>회원 납부 상태 사이가 끊겼습니다.</h3>
-      <div class="pm-flow">
-        <div class="pm-flow-row"><span class="pm-flow-key">이니시스</span><span class="pm-flow-arrow">→</span><span class="pm-flow-value">가상계좌 발급 성공</span></div>
-        <div class="pm-flow-row"><span class="pm-flow-key">입금</span><span class="pm-flow-arrow">→</span><span class="pm-flow-value">입금완료 값 수신</span></div>
-        <div class="pm-flow-row fail"><span class="pm-flow-key">회원 상태</span><span class="pm-flow-arrow">×</span><span class="pm-flow-value">납부완료 미반영</span></div>
-        <div class="pm-flow-row fail"><span class="pm-flow-key">QR / 혜택</span><span class="pm-flow-arrow">×</span><span class="pm-flow-value">비활성 상태 유지</span></div>
-      </div>
-      <p class="pm-case-result">연결 누락 특정 → 개발 수정 → 입금완료 / 회원권 / QR 활성화까지 재검증</p>
     </div>
   </div>
 </section>
