@@ -386,6 +386,19 @@ section { padding: 110px 40px; }
 /* EXPERIENCE */
 #experience { background: #fff; }
 .exp-timeline { position: relative; padding-left: 40px; }
+.experience-tabs {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin: -28px 0 34px;
+}
+.experience-tab {
+  appearance: none; border: 1px solid var(--line); background: #fff;
+  color: var(--muted); border-radius: 999px; padding: 11px 18px;
+  font: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.experience-tab:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+.experience-tab.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.exp-item[hidden] { display: none; }
 .exp-timeline::before {
   content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
   width: 1px; background: var(--line);
@@ -638,7 +651,13 @@ footer {
 
 /* MOBILE */
 @media (max-width: 900px) {
-  nav ul { display: none; }
+  nav .inner { padding: 0 24px; }
+  nav ul {
+    display: flex; gap: 18px; min-width: 0; overflow-x: auto;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  nav ul::-webkit-scrollbar { display: none; }
+  nav li { flex: 0 0 auto; }
   .hero { padding: 100px 24px 60px; }
   .hero-inner { grid-template-columns: 1fr; }
   .hero-visual { display: none; }
@@ -666,7 +685,28 @@ footer {
 }
 
 @media (max-width: 640px) {
+  html { scroll-padding-top: 68px; }
+  nav .inner { height: 56px; padding: 0 16px; gap: 16px; }
+  nav .logo { flex: 0 0 auto; font-size: 15px; }
+  nav .logo span { font-size: 10px; }
+  nav ul { gap: 16px; }
+  nav a { font-size: 12px; }
+  .scroll-progress { top: 56px; }
+  .hero-proof-strip { grid-template-columns: 1fr; max-width: none; }
+  .hero .cta-group { flex-direction: column; gap: 10px; }
+  .hero .btn { width: 100%; justify-content: center; }
+  .pm-case-meta { grid-template-columns: 1fr; }
+  .pm-case-visual { padding: 24px 18px; }
+  .pm-flow-row { grid-template-columns: 70px 16px minmax(0, 1fr); gap: 6px; }
+  .pm-flow-value { overflow-wrap: anywhere; }
+  .metric-card { padding: 28px 20px; }
+  .metric-num { font-size: 32px; }
+  .contact-card { padding: 24px 18px; }
+  .contact-card a { font-size: 16px; overflow-wrap: anywhere; }
   .pm-case-copy .section-title { font-size: 30px; }
+  .experience-tabs { flex-wrap: nowrap; overflow-x: auto; margin: -18px 0 28px; padding-bottom: 4px; scrollbar-width: none; }
+  .experience-tabs::-webkit-scrollbar { display: none; }
+  .experience-tab { flex: 0 0 auto; padding: 10px 16px; }
 }
 </style>
 </head>
@@ -836,8 +876,14 @@ footer {
   <div class="container">
     <div class="section-label">Experience</div>
     <div class="section-title">교육 / 멘토링 / 심사</div>
+    <div class="experience-tabs" role="tablist" aria-label="경험 유형">
+      <button class="experience-tab active" type="button" role="tab" aria-selected="true" data-filter="all">전체 보기</button>
+      <button class="experience-tab" type="button" role="tab" aria-selected="false" data-filter="education">교육</button>
+      <button class="experience-tab" type="button" role="tab" aria-selected="false" data-filter="mentoring">멘토링</button>
+      <button class="experience-tab" type="button" role="tab" aria-selected="false" data-filter="judging">심사</button>
+    </div>
     <div class="exp-timeline">
-      <div class="exp-item" data-delay="0">
+      <div class="exp-item" data-category="education" data-delay="0">
         <div>
           <div class="exp-role">카카오뱅크 x FIN:NECT<br>핀테크 AI 서비스 기획/BM 트랙</div>
           <div class="exp-period">2026.06 / 한국핀테크지원센터 / 카카오뱅크</div>
@@ -848,7 +894,7 @@ footer {
           <div class="exp-connect">참가팀이 "AI를 쓴다"는 표현을 넘어 누가 어떤 손실을 겪고, 왜 이 AI 방식이어야 하며, 어떤 가치가 지불로 이어지는지 설명하도록 구조화했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="100">
+      <div class="exp-item" data-category="judging" data-delay="100">
         <div>
           <div class="exp-role">SKT 전사 AI 해커톤 'AX 챌린지'<br>기획 부문 심사위원</div>
           <div class="exp-period">2026.05 / 행사 규모 54개 팀 / 115명</div>
@@ -860,7 +906,7 @@ footer {
           <div class="exp-connect">짧은 시간 안에 문제정의와 구현 결과를 함께 보고, 실제 업무 적용 가능성을 판단하는 기준을 적용했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="200">
+      <div class="exp-item" data-category="education" data-delay="200">
         <div>
           <div class="exp-role">KB국민은행<br>신입사원 생성형 AI 실무 교육</div>
           <div class="exp-period">2026.08 / 신입사원 30명 / 유캔랩스</div>
@@ -871,7 +917,7 @@ footer {
           <div class="exp-connect">도구 소개보다 직무별 질문 설계와 반복 업무 적용에 초점을 맞춰, 교육 이후에도 재사용할 수 있는 실습 흐름으로 구성했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="300">
+      <div class="exp-item" data-category="education" data-delay="300">
         <div>
           <div class="exp-role">분당서울대학교병원<br>의료기관 AI 워크숍 2차 대표강사</div>
           <div class="exp-period">2026.06.30 / 병원 현업자 대상</div>
@@ -882,7 +928,7 @@ footer {
           <div class="exp-connect">도구 기능보다 병원 현업자가 수업 후에도 다시 사용할 수 있는 보안 원칙, 문서 프롬프트, 현장 적용 과제를 중심으로 운영했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="400">
+      <div class="exp-item" data-category="education" data-delay="400">
         <div>
           <div class="exp-role">한국전력기술<br>공공기관 GPTs / AI Agent 활용 과정</div>
           <div class="exp-period">2026.07 ~ / 공공기관 현업자 대상 / 2차수</div>
@@ -893,7 +939,7 @@ footer {
           <div class="exp-connect">도구 기능 소개를 넘어 업무 선정, 지시문 설계, 배포, 검수까지 한 과정으로 연결했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="500">
+      <div class="exp-item" data-category="mentoring" data-delay="500">
         <div>
           <div class="exp-role">멋쟁이사자처럼 / 광화문 라이언즈<br>B2B 직장인 AX 대표강사</div>
           <div class="exp-period">2026.03 ~ 현재 / 1기-4기 운영</div>
@@ -905,7 +951,7 @@ footer {
           <div class="exp-connect">반복 운영 가능한 과제 제출, 리뷰, 피드백 구조를 통해 수강생이 수업 안에서 업무 산출물을 남기도록 설계했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="600">
+      <div class="exp-item" data-category="education" data-delay="600">
         <div>
           <div class="exp-role">팀스파르타 x 바인그룹<br>현업 중심 마이크로러닝 실습 과정</div>
           <div class="exp-period">2026.06 ~ / 기업교육 과정</div>
@@ -916,7 +962,7 @@ footer {
           <div class="exp-connect">시연보다 따라하기와 제출을 중심으로 설계해, 수업 후에도 재사용 가능한 업무 템플릿과 AI 비서 지침을 남기도록 했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="700">
+      <div class="exp-item" data-category="education" data-delay="700">
         <div>
           <div class="exp-role">KITECH<br>공공 연구기관 AI 업무 자동화 교육</div>
           <div class="exp-period">공공 연구기관 대상</div>
@@ -927,7 +973,7 @@ footer {
           <div class="exp-connect">Claude Code, n8n 등 노코드 자동화와 MCP, OpenAI API 기반 흐름을 업무 루틴으로 설명할 수 있도록 구성했습니다.</div>
         </div>
       </div>
-      <div class="exp-item" data-delay="800">
+      <div class="exp-item" data-category="mentoring judging" data-delay="800">
         <div>
           <div class="exp-role">멋쟁이사자처럼 대학 13기 / 14기<br>해커톤 멘토 / AI 아이디어톤 심사</div>
           <div class="exp-period">13기 해커톤 멘토 / 14기 예선 45개 팀 심사</div>
@@ -1163,6 +1209,24 @@ window.addEventListener('scroll', () => {
   let current = '';
   sections.forEach(s => { if (window.scrollY >= s.offsetTop - 200) current = s.id; });
   navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+});
+const experienceTabs = document.querySelectorAll('.experience-tab');
+const experienceItems = document.querySelectorAll('.exp-item');
+experienceTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const filter = tab.dataset.filter;
+    experienceTabs.forEach(item => {
+      const selected = item === tab;
+      item.classList.toggle('active', selected);
+      item.setAttribute('aria-selected', selected ? 'true' : 'false');
+    });
+    experienceItems.forEach(item => {
+      const categories = item.dataset.category || '';
+      const visible = filter === 'all' || categories.split(' ').includes(filter);
+      item.hidden = !visible;
+      if (visible) item.classList.add('visible');
+    });
+  });
 });
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
